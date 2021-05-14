@@ -1,16 +1,16 @@
 {
-  "name": "c-cli",
+  "name": "cjj-cli",
   "version": "1.0.0",
-  "description": "c-cli",
+  "description": "cjj-cli",
   "main": "dist/index.js",
   "scripts": {
     "start": "nodemon --watch ./src -e ts --exec tsc",
     "build": "tsc"
   },
   "bin": {
-    "c-cli": "./dist/index.js"
+    "cjj-cli": "./dist/index.js"
   },
-  "author": "chenjiaj",
+  "author": "chenjiajun",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",

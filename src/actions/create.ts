@@ -12,7 +12,6 @@ import { promisify } from 'util';
 import { waitLoading } from '../utils/waitLoading';
 import { Command } from 'commander/typings/index.d';
 
-
 const downloadGitRepo = promisify(downloadGitRepoOrigin); // 转换为支持promise的
 const ncp = promisify(ncpOrigin);
 const exec = promisify(child_process.exec);
@@ -22,7 +21,7 @@ const render: any = promisify(consolidate.ejs.render);
  * 获取所有模板
  */
 const fetchRepos = async () => {
-  const { data } = await axios.get('https://api.github.com/orgs/c-cli/repos');
+  const { data } = await axios.get('https://api.github.com/orgs/cjj-cli/repos');
   return data;
 };
 
@@ -32,7 +31,7 @@ const fetchRepos = async () => {
  * @returns 
  */
 const fetchRepoTags = async (repo: string) => {
-  const { data } = await axios.get(`https://api.github.com/repos/c-cli/${repo}/tags`);
+  const { data } = await axios.get(`https://api.github.com/repos/cjj-cli/${repo}/tags`);
   return data;
 };
 
@@ -43,12 +42,11 @@ const fetchRepoTags = async (repo: string) => {
 async function chooseRepo() {
   const repos = await waitLoading(fetchRepos, 'getting template...')();
   const reposChoise = repos.map((item: any) => item.name);
-  reposChoise.filter((name: string) => name !== 'c-cli');
   const { repo } = await inquirer.prompt({
     name: 'repo',
     type: 'list',
     message: 'please choices a template to create project',
-    choices: reposChoise,
+    choices: reposChoise.filter((name: string) => name.indexOf('cjj-cli') === -1),
   });
 
   return repo;
@@ -76,7 +74,7 @@ async function chooseRepoTag(repo: string) {
  * @param params 
  */
 async function downloadRepo(repo: string, tag: string) {
-  const api = tag ? `c-cli/${repo}#${tag}` : `c-cli/${repo}`;
+  const api = tag ? `cjj-cli/${repo}#${tag}` : `cjj-cli/${repo}`;
   const downloadDirectory = `${process.env[process.platform === 'darwin' ? 'HOME' : 'USERPROFILE']}/.template`;
   let dest = `${downloadDirectory}/${repo}`;
   if (fs.existsSync(dest)) { // 如果之前下载过，则删除后重新下载
@@ -110,6 +108,7 @@ module.exports = async (program: Command, projectName: string) => {
   const repo = await chooseRepo(); // 选择模板
   const tag = await chooseRepoTag(repo); // 选择版本
   const dest = await downloadRepo(repo, tag);
+
   /**
   * 模板中需要配置的参数放在模板根目录下的ask.js文件中
   * 如果不需要用户配置，则模板中不需要有这个文件
@@ -127,7 +126,6 @@ module.exports = async (program: Command, projectName: string) => {
         const args = require(path.join(dest, 'ask.js')); // 获取用户要填写的参数
         const obj = await inquirer.prompt(args); // 让用户填写信息
         const meta = metalsmith.metadata(); // 用户填写完后 传入下一个use
-        console.log('--------', obj, meta);
         Object.assign(meta, obj, {
           projectName,
         });
@@ -153,7 +151,4 @@ module.exports = async (program: Command, projectName: string) => {
         }
       });
   });
-
-
-
 };
