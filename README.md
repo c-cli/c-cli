@@ -24,3 +24,4 @@ c-cli create <project-name>
 `download-git-repo` 下载远程模板
 `metalsmith` 静态网站生成器
 `consolidate` node.js模板引擎的集合。包罗了常用的jade和ejs
+`ncp` 拷贝文件的包
