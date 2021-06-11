@@ -22,7 +22,8 @@
     "inquirer": "^8.0.0",
     "metalsmith": "^2.3.0",
     "ncp": "^2.0.0",
-    "ora": "^5.4.0"
+    "ora": "^5.4.0",
+    "zdex-downloadgitrepo": "^1.2.0"
   },
   "devDependencies": {
     "@types/consolidate": "^0.14.0",

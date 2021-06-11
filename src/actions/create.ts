@@ -3,7 +3,7 @@ import axios from 'axios';
 import * as path from 'path';
 import * as inquirer from 'inquirer';
 import * as consolidate from 'consolidate';
-import * as downloadGitRepoOrigin from 'download-git-repo';
+import * as downloadGitRepoOrigin from 'zdex-downloadgitrepo';
 import * as ncpOrigin from 'ncp';
 import * as fs from 'fs';
 import * as child_process from 'child_process';
@@ -11,6 +11,9 @@ import * as Metalsmith from 'metalsmith';
 import { promisify } from 'util';
 import { waitLoading } from '../utils/waitLoading';
 import { Command } from 'commander/typings/index.d';
+import gitConf from '../config/gitee';
+
+const { getReposUrl, getTagsUrl, orgName, cliName } = gitConf;
 
 const downloadGitRepo = promisify(downloadGitRepoOrigin); // 转换为支持promise的
 const ncp = promisify(ncpOrigin);
@@ -21,7 +24,7 @@ const render: any = promisify(consolidate.ejs.render);
  * 获取所有模板
  */
 const fetchRepos = async () => {
-  const { data } = await axios.get('https://api.github.com/orgs/cjj-cli/repos');
+  const { data } = await axios.get(getReposUrl);
   return data;
 };
 
@@ -31,7 +34,9 @@ const fetchRepos = async () => {
  * @returns 
  */
 const fetchRepoTags = async (repo: string) => {
-  const { data } = await axios.get(`https://api.github.com/repos/cjj-cli/${repo}/tags`);
+  console.log('getTagsUrl(repo)', getTagsUrl(repo));
+
+  const { data } = await axios.get(getTagsUrl(repo));
   return data;
 };
 
@@ -46,7 +51,7 @@ async function chooseRepo() {
     name: 'repo',
     type: 'list',
     message: 'please choices a template to create project',
-    choices: reposChoise.filter((name: string) => name.indexOf('cjj-cli') === -1),
+    choices: reposChoise.filter((name: string) => name.indexOf(cliName) === -1),
   });
 
   return repo;
@@ -74,13 +79,13 @@ async function chooseRepoTag(repo: string) {
  * @param params 
  */
 async function downloadRepo(repo: string, tag: string) {
-  const api = tag ? `cjj-cli/${repo}#${tag}` : `cjj-cli/${repo}`;
+  const api = tag ? `gitee:${orgName}/${repo}#${tag}` : `${orgName}/${repo}`;
   const downloadDirectory = `${process.env[process.platform === 'darwin' ? 'HOME' : 'USERPROFILE']}/.template`;
   let dest = `${downloadDirectory}/${repo}`;
   if (fs.existsSync(dest)) { // 如果之前下载过，则删除后重新下载
     await waitLoading(exec, 'deletting old files...')(`rm -rf ${dest}`);
   }
-  await waitLoading(downloadGitRepo, 'downloading template...')(api, dest);
+  await waitLoading(downloadGitRepo, 'downloading template...')(api, dest, { clone: true });
   return dest;
 }
 
