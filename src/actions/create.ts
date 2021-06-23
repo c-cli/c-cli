@@ -63,7 +63,9 @@ async function chooseRepo() {
  */
 async function chooseRepoTag(repo: string) {
   let tags = await waitLoading(fetchRepoTags, 'getting tags...')(repo);
-  tags = tags.map((item: any) => item.name);
+  console.log('tags----------', tags);
+
+  tags = tags.map((item: any) => item.name + ': ' + item.message);
   const { tag } = await inquirer.prompt({
     name: 'tag',
     type: 'list',
@@ -85,7 +87,9 @@ async function downloadRepo(repo: string, tag: string) {
   if (fs.existsSync(dest)) { // 如果之前下载过，则删除后重新下载
     await waitLoading(exec, 'deletting old files...')(`rm -rf ${dest}`);
   }
-  await waitLoading(downloadGitRepo, 'downloading template...')(api, dest, { clone: true });
+  await waitLoading(downloadGitRepo, 'downloading template...')(api, dest, {
+    clone: true,
+  });
   return dest;
 }
 
